@@ -7,15 +7,14 @@ export enum HttpMethod {
   PATCH = "patch",
   DELETE = "delete",
 }
-export interface IControllerDecorator {
-  (basePath?: string): ClassDecorator;
-}
-export interface IRouteDecorator {
-  (path?: string): MethodDecorator;
-}
-export interface IMiddlewareDecorator {
-  (...middleware: RequestHandler[]): ClassDecorator & MethodDecorator;
-}
+export type ControllerDecorator = (basePath?: string) => ClassDecorator;
+
+export type RouteDecorator = (path?: string) => MethodDecorator;
+
+export type MiddlewareDecorator = (
+  ...middleware: RequestHandler[]
+) => ClassDecorator & MethodDecorator;
+
 export type ParameterDecoratorType =
   | "body"
   | "params"

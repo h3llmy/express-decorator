@@ -1,12 +1,12 @@
 import "reflect-metadata";
-import { HttpMethod, IRouteDecorator } from "./interface";
+import { HttpMethod, RouteDecorator } from "./interface";
 import { NextFunction, Request, Response } from "express";
 import ControllerRegistry from "../helper/controllerRegistry";
 import { plainToClass } from "class-transformer";
 import { validate } from "class-validator";
 
 const routeDecoratorFactory =
-  (method: HttpMethod): IRouteDecorator =>
+  (method: HttpMethod): RouteDecorator =>
   (path = "") => {
     return (
       target: object,
@@ -89,8 +89,8 @@ function ExtractRequestData(
   return descriptor;
 }
 
-export const Get: IRouteDecorator = routeDecoratorFactory(HttpMethod.GET);
-export const Post: IRouteDecorator = routeDecoratorFactory(HttpMethod.POST);
-export const Put: IRouteDecorator = routeDecoratorFactory(HttpMethod.PUT);
-export const Patch: IRouteDecorator = routeDecoratorFactory(HttpMethod.PATCH);
-export const Delete: IRouteDecorator = routeDecoratorFactory(HttpMethod.DELETE);
+export const Get: RouteDecorator = routeDecoratorFactory(HttpMethod.GET);
+export const Post: RouteDecorator = routeDecoratorFactory(HttpMethod.POST);
+export const Put: RouteDecorator = routeDecoratorFactory(HttpMethod.PUT);
+export const Patch: RouteDecorator = routeDecoratorFactory(HttpMethod.PATCH);
+export const Delete: RouteDecorator = routeDecoratorFactory(HttpMethod.DELETE);

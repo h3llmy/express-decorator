@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { IMiddlewareDecorator } from "./interface";
+import { MiddlewareDecorator } from "./interface";
 
-export const Middleware: IMiddlewareDecorator = (...middleware) => {
+export const Middleware: MiddlewareDecorator = (...middleware) => {
   return (
     target: any,
     propertyKey?: string | symbol,

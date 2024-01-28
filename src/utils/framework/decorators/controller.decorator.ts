@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { IControllerDecorator } from "./interface";
+import { ControllerDecorator } from "./interface";
 
-export const Controller: IControllerDecorator = (basePath = "") => {
+export const Controller: ControllerDecorator = (basePath = "") => {
   return (target: Function) => {
     Reflect.defineMetadata("basePath", basePath, target);
   };

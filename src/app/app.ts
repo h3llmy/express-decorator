@@ -4,6 +4,7 @@ import glob from "glob";
 import "reflect-metadata";
 import { ControllerMethod } from "./interface";
 import fileUpload from "express-fileupload";
+import { HttpMethod } from "utils/framework/decorators/interface";
 
 class App {
   private readonly app: Express;
@@ -46,7 +47,7 @@ class App {
   }
 
   private registerControllerRoutes(controllerInstance: Object): void {
-    const basePath = Reflect.getMetadata(
+    const basePath: string = Reflect.getMetadata(
       "basePath",
       controllerInstance.constructor
     );
@@ -60,7 +61,7 @@ class App {
         controllerInstance,
         methodName
       );
-      const httpMethod: string = Reflect.getMetadata(
+      const httpMethod: HttpMethod = Reflect.getMetadata(
         "method",
         controllerInstance,
         methodName
