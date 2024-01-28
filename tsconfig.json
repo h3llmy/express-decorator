@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "ES2021",
+    "removeComments": true,
+    "module": "CommonJS",
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "baseUrl": "./src"
+  },
+  "include": ["src/**/*.ts", "src/server.ts"],
+  "exclude": ["node_modules", "src/**/*.test.ts"],
+  "files": ["src/utils/framework/index.d.ts"]
+}
