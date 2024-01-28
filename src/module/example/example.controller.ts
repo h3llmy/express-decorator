@@ -13,16 +13,20 @@ import {
 } from "../../utils/framework/decorators/parameter.decorator";
 import ExampleService from "./example.service";
 import { JossBody } from "./request/jossBody";
+import { Middleware } from "../../utils/framework/decorators/middleware.decorator";
+import TestMiddleware from "../../middleware/test.middeleware";
 
 @Controller("/example")
+@Middleware(TestMiddleware.mantap())
 export default class ExampleController {
   private exampleService = new ExampleService();
   @Get("/route/:id")
-  public helloRoute(@Params() params: number, @Query() query: any) {
+  public helloRoute(@Params() params: any, @Query() query: any) {
     return { params, query };
   }
 
   @Post("/joss")
+  @Middleware(TestMiddleware.test("testing route middleware"))
   public helloWorld(@Body() requestBody: JossBody) {
     return requestBody;
   }

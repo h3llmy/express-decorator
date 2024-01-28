@@ -4,7 +4,6 @@ import glob from "glob";
 import "reflect-metadata";
 import { ControllerMethod } from "./interface";
 import fileUpload from "express-fileupload";
-import { ValidationError } from "class-validator";
 
 class App {
   private readonly app: Express;
