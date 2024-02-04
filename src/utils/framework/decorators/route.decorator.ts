@@ -5,26 +5,7 @@ import ControllerRegistry from "../helper/controllerRegistry";
 import { plainToClass } from "class-transformer";
 import { validate } from "class-validator";
 
-const routeDecoratorFactory =
-  (method: HttpMethod): RouteDecorator =>
-  (path = "") => {
-    return (
-      target: object,
-      propertyKey: string | symbol,
-      descriptor: PropertyDescriptor
-    ) => {
-      Reflect.defineMetadata("path", path, target, propertyKey);
-      Reflect.defineMetadata("method", method, target, propertyKey);
-
-      return ExtractRequestData(target, propertyKey, descriptor);
-    };
-  };
-
-async function transformAndValidate(
-  type: string,
-  paramType: any,
-  data: any
-): Promise<any> {
+async function transformAndValidate(paramType: any, data: any): Promise<any> {
   if (/^\s*class/.test(paramType.toString())) {
     const dto: object = plainToClass(paramType, data);
     const errors = await validate(dto);
@@ -75,11 +56,7 @@ function ExtractRequestData(
 
     const args: any[] = [];
     for (const [index, type] of parameterDecorators) {
-      args[index] = await transformAndValidate(
-        type,
-        paramTypes[index],
-        req[type]
-      );
+      args[index] = await transformAndValidate(paramTypes[index], req[type]);
     }
 
     const result = await originalMethod.call(this, ...args);
@@ -88,6 +65,21 @@ function ExtractRequestData(
 
   return descriptor;
 }
+
+const routeDecoratorFactory =
+  (method: HttpMethod): RouteDecorator =>
+  (path = "") => {
+    return (
+      target: object,
+      propertyKey: string | symbol,
+      descriptor: PropertyDescriptor
+    ) => {
+      Reflect.defineMetadata("path", path, target, propertyKey);
+      Reflect.defineMetadata("method", method, target, propertyKey);
+
+      return ExtractRequestData(target, propertyKey, descriptor);
+    };
+  };
 
 export const Get: RouteDecorator = routeDecoratorFactory(HttpMethod.GET);
 export const Post: RouteDecorator = routeDecoratorFactory(HttpMethod.POST);

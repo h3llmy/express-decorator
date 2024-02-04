@@ -1,5 +1,6 @@
 import { Controller } from "../../utils/framework/decorators/controller.decorator";
 import {
+  Delete,
   Get,
   Post,
   Put,
@@ -9,30 +10,38 @@ import {
   File,
   Params,
   Query,
-  User,
 } from "../../utils/framework/decorators/parameter.decorator";
-import ExampleService from "./example.service";
 import { JossBody } from "./request/jossBody";
-import { Middleware } from "../../utils/framework/decorators/middleware.decorator";
-import TestMiddleware from "../../middleware/test.middeleware";
 
 @Controller("/example")
-@Middleware(TestMiddleware.mantap())
 export default class ExampleController {
-  private exampleService = new ExampleService();
-  @Get("/route/:id")
+  constructor(private readonly test: any) {}
+
+  public someMethod() {
+    return "helksajdlkjasldkjaldjslakjdlkajlsdkjalsdj";
+  }
+
+  @Get("/")
+  public testing() {
+    return this.someMethod();
+  }
+  @Get("/:id")
   public helloRoute(@Params() params: any, @Query() query: any) {
     return { params, query };
   }
 
-  @Post("/joss")
-  @Middleware(TestMiddleware.test("testing route middleware"))
+  @Post("/")
   public helloWorld(@Body() requestBody: JossBody) {
     return requestBody;
   }
 
-  @Put("/test")
-  public helloTest(@User() user: any, @File() file: any) {
-    return user;
+  @Put("/:id")
+  public helloTest(@Params() params: any, @File() file: any) {
+    return params;
+  }
+
+  @Delete("/:id")
+  public delete(@Params() params: any) {
+    return params;
   }
 }
