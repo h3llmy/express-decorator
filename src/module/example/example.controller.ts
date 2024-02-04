@@ -12,19 +12,17 @@ import {
   Query,
 } from "../../utils/framework/decorators/parameter.decorator";
 import { JossBody } from "./request/jossBody";
+import ExampleService from "./example.service";
 
 @Controller("/example")
 export default class ExampleController {
   constructor(private readonly test: any) {}
 
-  public someMethod() {
-    return "helksajdlkjasldkjaldjslakjdlkajlsdkjalsdj";
-  }
-
   @Get("/")
   public testing() {
-    return this.someMethod();
+    return ExampleService.test("aselole");
   }
+
   @Get("/:id")
   public helloRoute(@Params() params: any, @Query() query: any) {
     return { params, query };

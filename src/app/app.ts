@@ -12,13 +12,30 @@ import fileUpload from "express-fileupload";
 import cors from "cors";
 import { HttpMethod } from "utils/framework/decorators/interface";
 
+/**
+ * The `App` class represents the main application server.
+ * It is responsible for configuring the Express application,
+ * loading controllers dynamically, and starting the server.
+ */
 class App {
+  /**
+   * The Express application instance.
+   */
   private readonly app: Express;
-  private readonly port: number;
+
+  /**
+   * An array of file paths to controller classes.
+   * These controllers will be dynamically loaded.
+   */
   private readonly controllers: string[] = glob.sync(
     appConfig.structure.controllerPath
   );
-  private readonly defaultMiddleware = [
+
+  /**
+   * The default middleware stack for the Express application.
+   * It includes JSON parsing, CORS handling, and file uploading configuration.
+   */
+  private readonly defaultMiddleware: RequestHandler[] = [
     express.json(),
     cors(),
     fileUpload({
@@ -27,6 +44,20 @@ class App {
     }),
   ];
 
+  /**
+   * Creates an instance of the `App` class.
+   */
+  constructor() {
+    this.app = express();
+  }
+
+  /**
+   * Global error handler for handling uncaught errors during request processing.
+   * @param err - The error object.
+   * @param req - The Express request object.
+   * @param res - The Express response object.
+   * @param next - The Express next function.
+   */
   private globalErrorHandler(
     err: Error,
     req: Request,
@@ -37,11 +68,16 @@ class App {
     res.status(500).json({ error: "Internal Server Error" });
   }
 
+  /**
+   * Handles controller methods by invoking them and sending the response.
+   * @param controllerInstance - An instance of a controller class.
+   * @param methodName - The name of the method to be invoked.
+   */
   private readonly controllerHandling =
-    (controllerMethod: any, methodName: string): RequestHandler =>
+    (controllerInstance: Object, methodName: string): RequestHandler =>
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
-        const httpResponse = await controllerMethod[methodName](req);
+        const httpResponse = await controllerInstance[methodName](req);
         res.json(httpResponse);
       } catch (error) {
         if (error.message === "validation error") {
@@ -52,11 +88,9 @@ class App {
       }
     };
 
-  constructor(port: number) {
-    this.app = express();
-    this.port = port;
-  }
-
+  /**
+   * Dynamically loads controllers and registers their routes.
+   */
   private async loadControllers(): Promise<void> {
     await Promise.all(
       this.controllers.map(async (controllerPath) => {
@@ -67,14 +101,18 @@ class App {
         const controllerClass = module.default;
 
         if (controllerClass) {
-          const controllerInstance: any = new controllerClass();
+          const controllerInstance: Object = new controllerClass();
           this.registerControllerRoutes(controllerInstance);
         }
       })
     );
   }
 
-  private registerControllerRoutes(controllerInstance: any): void {
+  /**
+   * Registers routes for the methods of a controller class.
+   * @param controllerInstance - An instance of a controller class.
+   */
+  private registerControllerRoutes(controllerInstance: Object): void {
     const basePath: string = Reflect.getMetadata(
       "basePath",
       controllerInstance.constructor
@@ -119,12 +157,24 @@ class App {
     }
   }
 
-  public async start(): Promise<void> {
+  /**
+   * Adds global middleware to the default middleware stack.
+   * @param middleware - Express middleware functions to be added.
+   */
+  public setGlobalMiddleware(...middleware: RequestHandler[]): void {
+    this.defaultMiddleware.push(...middleware);
+  }
+
+  /**
+   * Starts the server by configuring middleware, loading controllers, and listening on the specified port.
+   * @param port - The port on which the server will listen.
+   */
+  public async start(port: number): Promise<void> {
     this.app.use(...this.defaultMiddleware);
     await this.loadControllers();
     this.app.use(this.globalErrorHandler);
-    this.app.listen(this.port, () =>
-      console.log(`App is listening at http://localhost:${this.port}`)
+    this.app.listen(port, () =>
+      console.log(`App is listening at http://localhost:${port}`)
     );
   }
 }
