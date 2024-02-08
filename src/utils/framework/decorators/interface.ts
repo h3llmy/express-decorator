@@ -8,6 +8,7 @@ export enum HttpMethod {
   POST = "post",
   PUT = "put",
   PATCH = "patch",
+  OPTIONS = "options",
   DELETE = "delete",
 }
 
@@ -23,7 +24,10 @@ export type ControllerDecorator = (basePath?: string) => ClassDecorator;
  * @param path - The path for the specific route.
  * @returns A method decorator function.
  */
-export type RouteDecorator = (path?: string) => MethodDecorator;
+export type RouteDecorator = (
+  path?: string,
+  sucessStatusCode?: number
+) => MethodDecorator;
 
 /**
  * Type definition for a decorator used for applying middleware to controllers or specific routes.
@@ -42,4 +46,5 @@ export type ParameterDecoratorType =
   | "params"
   | "query"
   | "file"
-  | "user";
+  | "user"
+  | "headers";

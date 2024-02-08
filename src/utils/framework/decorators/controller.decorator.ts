@@ -13,6 +13,7 @@ export const Controller: ControllerDecorator = (basePath = "") => {
    */
   return (target: Function) => {
     // Define metadata for the base path on the target class
+    Reflect.defineMetadata("isController", true, target);
     Reflect.defineMetadata("basePath", basePath, target);
   };
 };

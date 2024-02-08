@@ -3,7 +3,8 @@ import { HttpMethod, RouteDecorator } from "./interface";
 import { NextFunction, Request, Response } from "express";
 import ControllerRegistry from "../helper/controllerRegistry";
 import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
+import { ValidationError, validate } from "class-validator";
+import convertObjectToNumbers from "../helper/convertNumberableObject";
 
 /**
  * Asynchronously transforms and validates data based on the provided type.
@@ -12,10 +13,14 @@ import { validate } from "class-validator";
  * @returns A Promise resolving to the transformed and validated data.
  * @throws An object representing validation errors if validation fails.
  */
-async function transformAndValidate(paramType: any, data: any): Promise<any> {
+async function transformAndValidate(
+  paramType: any,
+  data: any,
+  type: string
+): Promise<any> {
   if (/^\s*class/.test(paramType.toString())) {
     const dto: object = plainToInstance(paramType, data);
-    const errors = await validate(dto);
+    const errors: ValidationError[] = await validate(dto);
 
     if (errors.length > 0) {
       const transformedObject = { message: "validation error", field: {} };
@@ -57,6 +62,9 @@ function ExtractRequestData(
     propertyKey
   );
 
+  // console.log(paramTypes[0]("ajsdlajldsjalsdjalsdj"));
+  // console.log(typeof paramTypes[0]());
+
   descriptor.value = async function (
     req: Request,
     res: Response,
@@ -72,8 +80,28 @@ function ExtractRequestData(
     }
 
     const args: any[] = [];
-    for (const [index, type] of parameterDecorators) {
-      args[index] = await transformAndValidate(paramTypes[index], req[type]);
+    let errorValidations = { message: "validation error", field: {} };
+    for (const [index, parameter] of parameterDecorators) {
+      try {
+        const convertedRequest = parameter.modified
+          ? convertObjectToNumbers(req[parameter.type])
+          : req[parameter.type];
+
+        args[index] = await transformAndValidate(
+          paramTypes[index],
+          convertedRequest,
+          parameter.type
+        );
+      } catch (error) {
+        if (error.message === "validation error") {
+          errorValidations.field[parameter.type] = error.field;
+        } else {
+          throw error;
+        }
+      }
+    }
+    if (Object.keys(errorValidations.field).length > 0) {
+      throw errorValidations;
     }
 
     const result = await originalMethod.call(this, ...args);
@@ -90,7 +118,7 @@ function ExtractRequestData(
  */
 const routeDecoratorFactory =
   (method: HttpMethod): RouteDecorator =>
-  (path = "") => {
+  (path = "", statusCode = 200) => {
     return (
       target: object,
       propertyKey: string | symbol,
@@ -99,6 +127,7 @@ const routeDecoratorFactory =
       // Define metadata for route path and HTTP method on the target method
       Reflect.defineMetadata("path", path, target, propertyKey);
       Reflect.defineMetadata("method", method, target, propertyKey);
+      Reflect.defineMetadata("statusCode", statusCode, target, propertyKey);
 
       // Apply ExtractRequestData decorator to handle parameter extraction and transformation
       return ExtractRequestData(target, propertyKey, descriptor);
@@ -124,6 +153,13 @@ export const Put: RouteDecorator = routeDecoratorFactory(HttpMethod.PUT);
  * Route decorator for defining a PATCH endpoint.
  */
 export const Patch: RouteDecorator = routeDecoratorFactory(HttpMethod.PATCH);
+
+/**
+ * Route decorator for defining a OPTIONS endpoint.
+ */
+export const Options: RouteDecorator = routeDecoratorFactory(
+  HttpMethod.OPTIONS
+);
 
 /**
  * Route decorator for defining a DELETE endpoint.

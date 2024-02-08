@@ -3,10 +3,14 @@ import { ParameterDecoratorType } from "./interface";
 
 /**
  * Factory function for creating parameter decorators.
- * @param type - The type of the parameter decorator (e.g., "body", "params", "query", "file", "user").
+ * @param type - The type of the parameter decorator (e.g., "body", "params", "query", "file", "user", "headers").
+ * @param modified - A boolean indicating whether the parameter has been modified.
  * @returns A parameter decorator function.
  */
-function parameterDecoratorFactory(type: ParameterDecoratorType) {
+function parameterDecoratorFactory(
+  type: ParameterDecoratorType,
+  modified: boolean = false
+) {
   /**
    * Parameter decorator function.
    * @returns A decorator function to be applied to class methods.
@@ -23,12 +27,13 @@ function parameterDecoratorFactory(type: ParameterDecoratorType) {
       propertyKey: string | symbol,
       parameterIndex: number
     ) {
-      // Register the parameter decorator in the ControllerRegistry
+      // Register the parameter decorator in the ControllerRegistry with the modified flag
       ControllerRegistry.registerParameterDecorator(
         target,
         propertyKey,
         parameterIndex,
-        type
+        type,
+        modified
       );
     };
   };
@@ -42,12 +47,17 @@ export const Body = parameterDecoratorFactory("body");
 /**
  * Parameter decorator for extracting data from route parameters.
  */
-export const Params = parameterDecoratorFactory("params");
+export const Params = parameterDecoratorFactory("params", true);
 
 /**
  * Parameter decorator for extracting data from query parameters.
  */
-export const Query = parameterDecoratorFactory("query");
+export const Query = parameterDecoratorFactory("query", true);
+
+/**
+ * Parameter decorator for extracting Headers data.
+ */
+export const Headers = parameterDecoratorFactory("headers", true);
 
 /**
  * Parameter decorator for handling file uploads.

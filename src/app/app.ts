@@ -78,7 +78,13 @@ class App {
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const httpResponse = await controllerInstance[methodName](req);
-        res.json(httpResponse);
+        const sucessStatusCode: number = Reflect.getMetadata(
+          "statusCode",
+          controllerInstance,
+          methodName
+        );
+
+        res.status(sucessStatusCode).json(httpResponse);
       } catch (error) {
         if (error.message === "validation error") {
           res.status(400).json(error);
@@ -102,7 +108,14 @@ class App {
 
         if (controllerClass) {
           const controllerInstance: Object = new controllerClass();
-          this.registerControllerRoutes(controllerInstance);
+          const isController: boolean | undefined = Reflect.getMetadata(
+            "isController",
+            controllerInstance.constructor
+          );
+
+          if (isController) {
+            this.registerControllerRoutes(controllerInstance);
+          }
         }
       })
     );

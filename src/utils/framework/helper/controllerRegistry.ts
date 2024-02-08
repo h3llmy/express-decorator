@@ -8,7 +8,7 @@ export default class ControllerRegistry {
    */
   private static parameterDecorators: Map<
     string | symbol,
-    Map<number, string>
+    Map<number, { type: string; modified: boolean }>
   > = new Map();
 
   /**
@@ -17,20 +17,24 @@ export default class ControllerRegistry {
    * @param propertyKey - The name of the decorated method.
    * @param parameterIndex - The index of the decorated parameter.
    * @param type - The type of the parameter decorator.
+   * @param modified - Whether the parameter has been modified.
    */
   public static registerParameterDecorator(
     target: Object,
     propertyKey: string | symbol,
     parameterIndex: number,
-    type: string
+    type: string,
+    modified: boolean
   ): void {
     // Ensure there is an entry for the method in the outer map
     if (!this.parameterDecorators.has(propertyKey)) {
       this.parameterDecorators.set(propertyKey, new Map());
     }
 
-    // Set the parameter decorator type in the inner map for the specified parameter index
-    this.parameterDecorators.get(propertyKey)!.set(parameterIndex, type);
+    // Set the parameter decorator type and modified flag in the inner map for the specified parameter index
+    this.parameterDecorators
+      .get(propertyKey)!
+      .set(parameterIndex, { type, modified });
   }
 
   /**
@@ -43,7 +47,7 @@ export default class ControllerRegistry {
   public static getParameterDecorators(
     target: Object,
     propertyKey: string | symbol
-  ): Map<number, string> | undefined {
+  ): Map<number, { type: string; modified: boolean }> | undefined {
     return this.parameterDecorators.get(propertyKey);
   }
 }

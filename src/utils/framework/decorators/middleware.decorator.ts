@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { MiddlewareDecorator } from "./interface";
+import { RequestHandler } from "express";
 
 /**
  * Decorator for applying middleware to controllers or specific routes.
@@ -21,9 +22,12 @@ export const Middleware: MiddlewareDecorator = (...middleware) => {
   ) => {
     if (propertyKey && descriptor) {
       // Applied to a method (route)
-      const existingMiddleware =
+      const existingMiddleware: RequestHandler[] =
         Reflect.getMetadata("middleware", target, propertyKey) || [];
-      const combinedMiddleware = [...existingMiddleware, ...middleware];
+      const combinedMiddleware: RequestHandler[] = [
+        ...existingMiddleware,
+        ...middleware,
+      ];
       Reflect.defineMetadata(
         "middleware",
         combinedMiddleware,

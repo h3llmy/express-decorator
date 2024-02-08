@@ -11,33 +11,33 @@ import {
   Params,
   Query,
 } from "../../utils/framework/decorators/parameter.decorator";
-import { JossBody } from "./request/jossBody";
+import { JossBody, JossQuery } from "./request/jossBody";
 import ExampleService from "./example.service";
+import { Middleware } from "../../utils/framework/decorators/middleware.decorator";
+import TestMiddleware from "../../middleware/test.middeleware";
 
 @Controller("/example")
 export default class ExampleController {
-  constructor(private readonly test: any) {}
-
-  @Get("/")
+  @Get("/", 201)
   public testing() {
     return ExampleService.test("aselole");
   }
-
   @Get("/:id")
-  public helloRoute(@Params() params: any, @Query() query: any) {
-    return { params, query };
+  public helloRoute(@Params() params: number) {
+    return { params };
   }
-
   @Post("/")
-  public helloWorld(@Body() requestBody: JossBody) {
-    return requestBody;
+  @Middleware(TestMiddleware.test("mantap"))
+  public helloWorld(
+    @Body() requestBody: JossBody,
+    @Query() requestQuery: JossQuery
+  ) {
+    return { requestBody, requestQuery };
   }
-
   @Put("/:id")
   public helloTest(@Params() params: any, @File() file: any) {
     return params;
   }
-
   @Delete("/:id")
   public delete(@Params() params: any) {
     return params;

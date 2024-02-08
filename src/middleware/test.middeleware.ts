@@ -1,15 +1,15 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 
 class TestMiddleware {
-  static test(name: string) {
-    return async (req: Request, res: Response, next: NextFunction) => {
+  static test(name: string): RequestHandler {
+    return (req: Request, res: Response, next: NextFunction): void => {
       console.log(name);
       next();
     };
   }
 
-  static mantap() {
-    return async (req: Request, res: Response, next: NextFunction) => {
+  static mantap(): RequestHandler {
+    return (req: Request, res: Response, next: NextFunction): void => {
       console.log("joss");
       next();
     };
