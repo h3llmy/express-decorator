@@ -49,7 +49,7 @@ async function transformAndValidate(
  * @param descriptor - The descriptor of the decorated method.
  * @returns The modified descriptor with request data extraction logic.
  */
-function ExtractRequestData(
+function extractRequestData(
   target: Object,
   propertyKey: string | symbol,
   descriptor: PropertyDescriptor
@@ -129,8 +129,8 @@ const routeDecoratorFactory =
       Reflect.defineMetadata("method", method, target, propertyKey);
       Reflect.defineMetadata("statusCode", statusCode, target, propertyKey);
 
-      // Apply ExtractRequestData decorator to handle parameter extraction and transformation
-      return ExtractRequestData(target, propertyKey, descriptor);
+      // Apply extractRequestData decorator to handle parameter extraction and transformation
+      return extractRequestData(target, propertyKey, descriptor);
     };
   };
 

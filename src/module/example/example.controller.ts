@@ -18,15 +18,17 @@ import TestMiddleware from "../../middleware/test.middeleware";
 
 @Controller("/example")
 export default class ExampleController {
-  @Get("/", 201)
+  constructor(private service: ExampleService) {}
+
+  @Get("/", 200)
   public testing() {
-    return ExampleService.test("aselole");
+    return this.service.test("mantappp");
   }
   @Get("/:id")
   public helloRoute(@Params() params: number) {
     return { params };
   }
-  @Post("/")
+  @Post("/", 201)
   @Middleware(TestMiddleware.test("mantap"))
   public helloWorld(
     @Body() requestBody: JossBody,

@@ -9,7 +9,7 @@ import { ParameterDecoratorType } from "./interface";
  */
 function parameterDecoratorFactory(
   type: ParameterDecoratorType,
-  modified: boolean = false
+  modified: boolean
 ) {
   /**
    * Parameter decorator function.
@@ -42,29 +42,29 @@ function parameterDecoratorFactory(
 /**
  * Parameter decorator for extracting data from the request body.
  */
-export const Body = parameterDecoratorFactory("body");
+export const Body: Function = parameterDecoratorFactory("body", false);
 
 /**
  * Parameter decorator for extracting data from route parameters.
  */
-export const Params = parameterDecoratorFactory("params", true);
+export const Params: Function = parameterDecoratorFactory("params", true);
 
 /**
  * Parameter decorator for extracting data from query parameters.
  */
-export const Query = parameterDecoratorFactory("query", true);
+export const Query: Function = parameterDecoratorFactory("query", true);
 
 /**
  * Parameter decorator for extracting Headers data.
  */
-export const Headers = parameterDecoratorFactory("headers", true);
+export const Headers: Function = parameterDecoratorFactory("headers", true);
 
 /**
- * Parameter decorator for handling file uploads.
+ * Parameter decorator for extracting file uploads.
  */
-export const File = parameterDecoratorFactory("file");
+export const File: Function = parameterDecoratorFactory("file", false);
 
 /**
  * Parameter decorator for extracting user-related data.
  */
-export const User = parameterDecoratorFactory("user");
+export const User: Function = parameterDecoratorFactory("user", false);

@@ -26,7 +26,7 @@ export type ControllerDecorator = (basePath?: string) => ClassDecorator;
  */
 export type RouteDecorator = (
   path?: string,
-  sucessStatusCode?: number
+  statusCode?: number
 ) => MethodDecorator;
 
 /**

@@ -1,5 +1,7 @@
 export default class ExampleService {
-  static test(name: string) {
+  public test(name: string) {
     return `hello ${name}`;
   }
+
+  public hello = "testing";
 }

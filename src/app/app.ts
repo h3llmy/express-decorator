@@ -107,7 +107,17 @@ class App {
         const controllerClass = module.default;
 
         if (controllerClass) {
-          const controllerInstance: Object = new controllerClass();
+          const injectionParams: object[] = Reflect.getMetadata(
+            "design:paramtypes",
+            controllerClass
+          );
+          const injectionConstructor: object[] = injectionParams.map(
+            (paramType: any) => new paramType()
+          );
+
+          const controllerInstance: Object = new controllerClass(
+            ...injectionConstructor
+          );
           const isController: boolean | undefined = Reflect.getMetadata(
             "isController",
             controllerInstance.constructor
@@ -166,8 +176,40 @@ class App {
         ];
 
         this.app[httpMethod](fullPath, routeHandlers);
+
+        this.routeLogger(httpMethod, fullPath);
       }
     }
+  }
+
+  /**
+   * Logs information about a registered route with colorized HTTP method.
+   * @param {HttpMethod} httpMethod - The HTTP method of the route.
+   * @param {string} fullPath - The full path of the route.
+   * @private
+   */
+  private routeLogger(httpMethod: HttpMethod, fullPath: string): void {
+    const colors = {
+      GET: "\x1b[32m",
+      POST: "\x1b[34m",
+      PUT: "\x1b[33m",
+      DELETE: "\x1b[31m",
+      RESET: "\x1b[0m",
+    };
+
+    const upperCaseMethodName = httpMethod.toUpperCase();
+    console.log(
+      `Route: ${colors[upperCaseMethodName]}${upperCaseMethodName}${colors.RESET} ${fullPath}`
+    );
+  }
+
+  /**
+   * check application status
+   */
+  private healthCheck(): void {
+    this.app.get("/health", (req: Request, res: Response) => {
+      res.status(200).json({ status: "ok" });
+    });
   }
 
   /**
@@ -183,6 +225,7 @@ class App {
    * @param port - The port on which the server will listen.
    */
   public async start(port: number): Promise<void> {
+    this.healthCheck();
     this.app.use(...this.defaultMiddleware);
     await this.loadControllers();
     this.app.use(this.globalErrorHandler);
