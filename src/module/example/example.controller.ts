@@ -14,20 +14,24 @@ import {
 import { JossBody, JossQuery } from "./request/jossBody";
 import ExampleService from "./example.service";
 import { Middleware } from "../../utils/framework/decorators/middleware.decorator";
-import TestMiddleware from "../../middleware/test.middeleware";
+import TestMiddleware from "../../middleware/test.middleware";
+import { Inject } from "../../utils/framework/decorators/injection.decorator";
 
 @Controller("/example")
 export default class ExampleController {
-  constructor(private service: ExampleService) {}
+  @Inject()
+  private exampleService: ExampleService;
 
   @Get("/", 200)
   public testing() {
-    return this.service.test("mantappp");
+    return this.exampleService.test("my name is helmi");
   }
+
   @Get("/:id")
   public helloRoute(@Params() params: number) {
     return { params };
   }
+
   @Post("/", 201)
   @Middleware(TestMiddleware.test("mantap"))
   public helloWorld(
@@ -36,10 +40,12 @@ export default class ExampleController {
   ) {
     return { requestBody, requestQuery };
   }
+
   @Put("/:id")
   public helloTest(@Params() params: any, @File() file: any) {
     return params;
   }
+
   @Delete("/:id")
   public delete(@Params() params: any) {
     return params;

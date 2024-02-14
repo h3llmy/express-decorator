@@ -1,8 +1,7 @@
-export default {
-  structure: {
-    controllerPath: "src/module/**/*.controller.ts",
-  },
-  api: {
-    baseUrl: "/api/v1",
-  },
+const appConfig: IAppConfig = {
+  controllerPath: "src/module/**/*.controller.ts",
+  baseUrl: "/api/v1",
+  logRouteList: true,
 };
+
+export default appConfig;

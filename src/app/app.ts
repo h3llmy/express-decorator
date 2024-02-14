@@ -1,4 +1,3 @@
-import appConfig from "../config/app.config";
 import express, {
   Express,
   RequestHandler,
@@ -10,7 +9,7 @@ import glob from "glob";
 import "reflect-metadata";
 import fileUpload from "express-fileupload";
 import cors from "cors";
-import { HttpMethod } from "utils/framework/decorators/interface";
+import { HttpMethod } from "../utils/framework/decorators/interface";
 
 /**
  * The `App` class represents the main application server.
@@ -24,11 +23,20 @@ class App {
   private readonly app: Express;
 
   /**
+   * Default configuration options for the application.
+   */
+  private readonly appConfig: IAppConfig = {
+    controllerPath: "src/module/**/*.controller.ts",
+    baseUrl: "/api/v1",
+    logRouteList: false,
+  };
+
+  /**
    * An array of file paths to controller classes.
    * These controllers will be dynamically loaded.
    */
   private readonly controllers: string[] = glob.sync(
-    appConfig.structure.controllerPath
+    this.appConfig.controllerPath
   );
 
   /**
@@ -46,9 +54,15 @@ class App {
 
   /**
    * Creates an instance of the `App` class.
+   *
+   * @param {IAppConfig} [config] - The configuration options for the application.
+   * @description
+   * Initializes a new instance of the `App` class with the provided configuration options.
+   * If no configuration is provided, default values will be used.
    */
-  constructor() {
+  constructor(config?: IAppConfig) {
     this.app = express();
+    this.appConfig = { ...this.appConfig, ...config };
   }
 
   /**
@@ -78,13 +92,13 @@ class App {
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const httpResponse = await controllerInstance[methodName](req);
-        const sucessStatusCode: number = Reflect.getMetadata(
+        const successStatusCode: number = Reflect.getMetadata(
           "statusCode",
           controllerInstance,
           methodName
         );
 
-        res.status(sucessStatusCode).json(httpResponse);
+        res.status(successStatusCode).json(httpResponse);
       } catch (error) {
         if (error.message === "validation error") {
           res.status(400).json(error);
@@ -98,37 +112,29 @@ class App {
    * Dynamically loads controllers and registers their routes.
    */
   private async loadControllers(): Promise<void> {
-    await Promise.all(
-      this.controllers.map(async (controllerPath) => {
-        const module = await import(
-          controllerPath.replace("src/", "../").replace(".ts", "")
-        );
-
-        const controllerClass = module.default;
-
-        if (controllerClass) {
-          const injectionParams: object[] = Reflect.getMetadata(
-            "design:paramtypes",
-            controllerClass
-          );
-          const injectionConstructor: object[] = injectionParams.map(
-            (paramType: any) => new paramType()
+    if (this.controllers) {
+      await Promise.all(
+        this.controllers.map(async (controllerPath) => {
+          const module = await import(
+            controllerPath.replace("src/", "../").replace(".ts", "")
           );
 
-          const controllerInstance: Object = new controllerClass(
-            ...injectionConstructor
-          );
-          const isController: boolean | undefined = Reflect.getMetadata(
-            "isController",
-            controllerInstance.constructor
-          );
+          const controllerClass = module.default;
 
-          if (isController) {
-            this.registerControllerRoutes(controllerInstance);
+          if (controllerClass) {
+            const controllerInstance: Object = new controllerClass();
+            const isController: boolean | undefined = Reflect.getMetadata(
+              "isController",
+              controllerInstance.constructor
+            );
+
+            if (isController) {
+              this.registerControllerRoutes(controllerInstance);
+            }
           }
-        }
-      })
-    );
+        })
+      );
+    }
   }
 
   /**
@@ -165,7 +171,7 @@ class App {
         Reflect.getMetadata("middleware", controllerInstance, methodName);
 
       if (methodPath && httpMethod) {
-        const fullPath = `${appConfig.api.baseUrl ?? ""}${
+        const fullPath = `${this.appConfig.baseUrl ?? ""}${
           basePath ?? ""
         }${methodPath}`;
 
@@ -198,9 +204,11 @@ class App {
     };
 
     const upperCaseMethodName = httpMethod.toUpperCase();
-    console.log(
-      `Route: ${colors[upperCaseMethodName]}${upperCaseMethodName}${colors.RESET} ${fullPath}`
-    );
+    if (this.appConfig.logRouteList) {
+      console.log(
+        `Route: ${colors[upperCaseMethodName]}${upperCaseMethodName}${colors.RESET} ${fullPath}`
+      );
+    }
   }
 
   /**
@@ -220,6 +228,14 @@ class App {
     this.defaultMiddleware.push(...middleware);
   }
 
+  /**
+   * Gets the Express server instance.
+   *
+   * @returns {Express} The Express server instance.
+   */
+  public getServer(): Express {
+    return this.app;
+  }
   /**
    * Starts the server by configuring middleware, loading controllers, and listening on the specified port.
    * @param port - The port on which the server will listen.

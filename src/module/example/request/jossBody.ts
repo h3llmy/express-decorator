@@ -21,4 +21,6 @@ export class JossBody {
   @IsNumber()
   @IsNotEmpty()
   number: number;
+
+  image?: File;
 }

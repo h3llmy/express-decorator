@@ -4,3 +4,9 @@ declare namespace Express {
     user?: any;
   }
 }
+
+declare interface IAppConfig {
+  controllerPath?: string;
+  baseUrl?: string;
+  logRouteList?: boolean;
+}

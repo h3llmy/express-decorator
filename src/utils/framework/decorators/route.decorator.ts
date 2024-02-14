@@ -83,6 +83,7 @@ function extractRequestData(
     let errorValidations = { message: "validation error", field: {} };
     for (const [index, parameter] of parameterDecorators) {
       try {
+        // TODO: convert this by paramsType
         const convertedRequest = parameter.modified
           ? convertObjectToNumbers(req[parameter.type])
           : req[parameter.type];
